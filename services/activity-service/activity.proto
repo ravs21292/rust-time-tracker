@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package activity;
+
+// Activity tracking service definition
+service ActivityService {
+    rpc StartTracking(StartTrackingRequest) returns (StartTrackingResponse);
+    rpc StopTracking(StopTrackingRequest) returns (StopTrackingResponse);
+    rpc UpdateActivity(UpdateActivityRequest) returns (UpdateActivityResponse);
+    rpc GetActivityLogs(GetActivityLogsRequest) returns (GetActivityLogsResponse);
+    rpc GetCurrentActivity(GetCurrentActivityRequest) returns (GetCurrentActivityResponse);
+    rpc AssignTask(AssignTaskRequest) returns (AssignTaskResponse);
+    rpc GetTasks(GetTasksRequest) returns (GetTasksResponse);
+    rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+}
+
+message StartTrackingRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    optional string task_name = 3;
+    optional string task_description = 4;
+}
+
+message StartTrackingResponse {
+    bool success = 1;
+    string message = 2;
+    string session_id = 3;
+    int64 activity_log_id = 4;
+}
+
+message StopTrackingRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    string session_id = 3;
+}
+
+message StopTrackingResponse {
+    bool success = 1;
+    string message = 2;
+    int64 total_time_seconds = 3;
+    int64 idle_time_seconds = 4;
+}
+
+message UpdateActivityRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    string session_id = 3;
+    repeated string urls = 4;
+    int32 idle_time_seconds = 5;
+}
+
+message UpdateActivityResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetActivityLogsRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    optional string start_date = 3;
+    optional string end_date = 4;
+    optional int32 limit = 5;
+    optional int32 offset = 6;
+}
+
+message GetActivityLogsResponse {
+    bool success = 1;
+    string message = 2;
+    repeated ActivityLog logs = 3;
+    int32 total_count = 4;
+}
+
+message GetCurrentActivityRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+}
+
+message GetCurrentActivityResponse {
+    bool success = 1;
+    string message = 2;
+    optional ActivityLog current_activity = 3;
+}
+
+message AssignTaskRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    string session_id = 3;
+    string task_name = 4;
+    optional string task_description = 5;
+}
+
+message AssignTaskResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetTasksRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+}
+
+message GetTasksResponse {
+    bool success = 1;
+    string message = 2;
+    repeated Task tasks = 3;
+}
+
+message CreateTaskRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    string name = 3;
+    optional string description = 4;
+    optional string project_name = 5;
+}
+
+message CreateTaskResponse {
+    bool success = 1;
+    string message = 2;
+    Task task = 3;
+}
+
+message ActivityLog {
+    int64 id = 1;
+    int32 employee_id = 2;
+    string session_id = 3;
+    string start_time = 4;
+    optional string end_time = 5;
+    int32 idle_time = 6;
+    int32 active_time = 7;
+    optional string task_name = 8;
+    optional string task_description = 9;
+    repeated string urls = 10;
+    bool is_active = 11;
+}
+
+message Task {
+    int64 id = 1;
+    int32 employee_id = 2;
+    string name = 3;
+    optional string description = 4;
+    optional string project_name = 5;
+    bool is_active = 6;
+    string created_at = 7;
+}

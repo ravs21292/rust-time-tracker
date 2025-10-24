@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package screenshot;
+
+// Screenshot service definition
+service ScreenshotService {
+    rpc CaptureScreenshot(CaptureScreenshotRequest) returns (CaptureScreenshotResponse);
+    rpc GetScreenshots(GetScreenshotsRequest) returns (GetScreenshotsResponse);
+    rpc DeleteScreenshot(DeleteScreenshotRequest) returns (DeleteScreenshotResponse);
+    rpc GetScreenshot(GetScreenshotRequest) returns (GetScreenshotResponse);
+}
+
+message CaptureScreenshotRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    optional string session_id = 3;
+    bytes screenshot_data = 4;
+    optional string compression_type = 5;
+}
+
+message CaptureScreenshotResponse {
+    bool success = 1;
+    string message = 2;
+    int64 screenshot_id = 3;
+    string file_path = 4;
+}
+
+message GetScreenshotsRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    optional string session_id = 3;
+    optional string start_date = 4;
+    optional string end_date = 5;
+    optional int32 limit = 6;
+    optional int32 offset = 7;
+}
+
+message GetScreenshotsResponse {
+    bool success = 1;
+    string message = 2;
+    repeated ScreenshotInfo screenshots = 3;
+    int32 total_count = 4;
+}
+
+message DeleteScreenshotRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    int64 screenshot_id = 3;
+}
+
+message DeleteScreenshotResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetScreenshotRequest {
+    int32 employee_id = 1;
+    string session_token = 2;
+    int64 screenshot_id = 3;
+}
+
+message GetScreenshotResponse {
+    bool success = 1;
+    string message = 2;
+    optional ScreenshotData screenshot = 3;
+}
+
+message ScreenshotInfo {
+    int64 id = 1;
+    int32 employee_id = 2;
+    optional int64 activity_log_id = 3;
+    string timestamp = 4;
+    string file_path = 5;
+    int32 file_size = 6;
+    string compression_type = 7;
+}
+
+message ScreenshotData {
+    int64 id = 1;
+    int32 employee_id = 2;
+    optional int64 activity_log_id = 3;
+    string timestamp = 4;
+    bytes screenshot_data = 5;
+    string file_path = 6;
+    int32 file_size = 7;
+    string compression_type = 8;
+}

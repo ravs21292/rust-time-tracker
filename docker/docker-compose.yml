@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: time_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # Performance optimizations for high concurrency
+      POSTGRES_SHARED_BUFFERS: 256MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 1GB
+      POSTGRES_MAINTENANCE_WORK_MEM: 64MB
+      POSTGRES_CHECKPOINT_COMPLETION_TARGET: 0.9
+      POSTGRES_WAL_BUFFERS: 16MB
+      POSTGRES_DEFAULT_STATISTICS_TARGET: 100
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/time_tracker
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-secret-key-change-in-production
+      - AUTH_SERVICE_PORT=50051
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./services/auth-service:/app
+      - cargo_cache:/usr/local/cargo/registry
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  activity-service:
+    build:
+      context: .
+      dockerfile: services/activity-service/Dockerfile
+    ports:
+      - "50052:50052"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/time_tracker
+      - REDIS_URL=redis://redis:6379
+      - ACTIVITY_SERVICE_PORT=50052
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./services/activity-service:/app
+      - cargo_cache:/usr/local/cargo/registry
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  screenshot-service:
+    build:
+      context: .
+      dockerfile: services/screenshot-service/Dockerfile
+    ports:
+      - "50053:50053"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/time_tracker
+      - REDIS_URL=redis://redis:6379
+      - SCREENSHOT_SERVICE_PORT=50053
+      - SCREENSHOT_STORAGE_PATH=/app/screenshots
+      - SCREENSHOT_COMPRESSION_QUALITY=80
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./services/screenshot-service:/app
+      - screenshot_storage:/app/screenshots
+      - cargo_cache:/usr/local/cargo/registry
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:50051
+      - ACTIVITY_SERVICE_URL=http://activity-service:50052
+      - SCREENSHOT_SERVICE_URL=http://screenshot-service:50053
+      - REDIS_URL=redis://redis:6379
+      - API_GATEWAY_PORT=8080
+      - MAX_REQUESTS_PER_MINUTE=1000
+    depends_on:
+      - auth-service
+      - activity-service
+      - screenshot-service
+      - redis
+    volumes:
+      - ./services/api-gateway:/app
+      - cargo_cache:/usr/local/cargo/registry
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+volumes:
+  postgres_data:
+  redis_data:
+  screenshot_storage:
+  cargo_cache:

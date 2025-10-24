@@ -1,0 +1,37 @@
+[package]
+name = "api-gateway"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "api-gateway"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { workspace = true }
+tonic = { workspace = true }
+prost = { workspace = true }
+sqlx = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+clap = { workspace = true }
+dotenv = { workspace = true }
+base64 = { workspace = true }
+jwt = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+dashmap = "5.5"
+tokio-stream = "0.1"
+reqwest = { workspace = true }
+url = { workspace = true }
+proto = { path = "../../proto" }
+
+[build-dependencies]
+tonic-build = "0.10"
