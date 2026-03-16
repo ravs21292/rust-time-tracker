@@ -211,4 +211,5 @@ time-tracker/
 - Efficient screenshot compression
 - Minimal system resource usage
 
-## Note: I started building this project for my portfolio and enhance my skills and curiosity to make OS appplications.
+
+- Note: I started building this project for my portfolio and enhance my skills and curiosity to make OS appplications.
