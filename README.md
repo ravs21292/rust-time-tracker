@@ -1,4 +1,5 @@
 # Time Tracker Software
+This project is part of my backend engineering portfolio. The backend architecture, API design, and implementation were designed and built by me while exploring and learning core backend development concepts.
 
 A comprehensive employee time tracking system built with Rust, gRPC, PostgreSQL, and microservice architecture.
 
@@ -210,13 +211,4 @@ time-tracker/
 - Efficient screenshot compression
 - Minimal system resource usage
 
-## Contributing
-
-1. Follow Rust coding standards
-2. Write comprehensive tests
-3. Document all public APIs
-4. Use conventional commit messages
-
-## License
-
-MIT License - see LICENSE file for details
+## Note: I started building this project for my portfolio and enhance my skills and curiosity to make OS appplications.
